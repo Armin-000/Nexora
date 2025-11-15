@@ -351,7 +351,7 @@ const App: React.FC = () => {
                     >
                       <div className="bubble-header">
                         <span className="role-label">
-                          {isUser ? 'Ti' : 'Chatbot'}
+                          {isUser ? 'Ti' : 'Nexora'}
                         </span>
                       </div>
 
