@@ -24,11 +24,12 @@ body,
 /* APP LAYOUT */
 
 .app-root {
-  min-height: 100vh;
+  height: 100vh;  /* 👈 umjesto min-height */
   display: flex;
   justify-content: center;
   padding: 24px clamp(16px, 4vw, 40px);
   transition: background 0.25s ease-out, color 0.25s ease-out;
+  box-sizing: border-box; /* već je globalno, ali ne smeta naglasiti */
 }
 
 .chat-shell {
@@ -38,6 +39,7 @@ body,
   display: flex;
   flex-direction: column;
   gap: 12px;
+  height: 100%;      /* 👈 ključno */
 }
 
 /* THEME BACKGROUNDS */
@@ -199,7 +201,8 @@ body,
 .chat-body {
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 110px);
+  flex: 1;     /* ispuni sav preostali prostor ispod headera */
+  min-height: 0;
 }
 
 /* PORUKE */
@@ -208,6 +211,7 @@ body,
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;   /* 👈 dodaj ovo */
 }
 
 .messages {
@@ -216,9 +220,10 @@ body,
   display: flex;
   flex-direction: column;
   gap: 12px;
-  overflow-y: auto;
+  overflow-y: auto;       /* scroll samo ovdje */
   scroll-behavior: smooth;
   scrollbar-width: thin;
+  min-height: 0;          /* 👈 bitno kod flex layouta */
 }
 
 .messages::-webkit-scrollbar {
@@ -474,15 +479,16 @@ body,
 }
 
 .theme-light .code-copy-btn {
-  background: rgba(0, 0, 0, 0.04);
-  color: #111827;
-  border-color: rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e7eb;
+  border-color: rgba(148, 163, 184, 0.4);
 }
 
 .theme-light .code-copy-btn:hover {
-  background: rgba(0, 0, 0, 0.12);
-  border-color: rgba(0, 0, 0, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
 }
+
 
 /* CODE BODY */
 

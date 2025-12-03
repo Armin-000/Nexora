@@ -1,14 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Prism from 'prismjs';
 
-// Prism jezici (VAŽAN REDOSLIJED)
-import 'prismjs/components/prism-markup';    // HTML
+// Prism languages (load order matters)
+import 'prismjs/components/prism-markup'; // HTML
 import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-jsx';
 import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-tsx';
+
+import SettingsModal from './components/settingsModal';
+
+/* ────────────────────────────────────────────────────────────
+ * Types
+ * ──────────────────────────────────────────────────────────── */
 
 type Role = 'system' | 'user' | 'assistant';
 
@@ -25,13 +31,25 @@ interface Segment {
   key: string;
 }
 
-const MODEL_OPTIONS = [
-  { value: 'qwen2.5-coder:1.5b', label: 'Qwen 2.5 Coder 1.5B' },
-  { value: 'qwen2.5:0.5b', label: 'Qwen 2.5 0.5B' },
-  { value: 'llama3.2:1b', label: 'Llama 3.2 1B' },
-];
+interface AuthUser {
+  id?: number;
+  email: string;
+}
 
-// helper za prikaz jezika
+/* ────────────────────────────────────────────────────────────
+ * Constants
+ * ──────────────────────────────────────────────────────────── */
+
+// Single hard-coded model (no model dropdown in UI)
+const MODEL_NAME = 'llama3.2:3b';
+
+/* ────────────────────────────────────────────────────────────
+ * Helpers
+ * ──────────────────────────────────────────────────────────── */
+
+/**
+ * Normalize language hints for Prism based on a short `lang` token.
+ */
 const resolveLanguage = (raw?: string) => {
   const lang = (raw || '').toLowerCase();
 
@@ -45,7 +63,10 @@ const resolveLanguage = (raw?: string) => {
   return 'javascript';
 };
 
-// parsira tekst na običan + code blockove ```lang ... ```
+/**
+ * Split a message into plain text segments and ```lang code``` blocks.
+ * This allows us to render mixed content with syntax highlighting.
+ */
 const parseMessageContent = (content: string, messageId: number): Segment[] => {
   const segments: Segment[] = [];
   const codeRegex = /```(\w+)?\s*\r?\n([\s\S]*?)```/g;
@@ -59,6 +80,7 @@ const parseMessageContent = (content: string, messageId: number): Segment[] => {
     const matchStart = match.index;
     const matchEnd = matchStart + fullMatch.length;
 
+    // Text before the code block
     if (matchStart > lastIndex) {
       const textPart = content.slice(lastIndex, matchStart);
       if (textPart.trim().length > 0) {
@@ -70,6 +92,7 @@ const parseMessageContent = (content: string, messageId: number): Segment[] => {
       }
     }
 
+    // Code block itself
     const lang = (langRaw || '').trim() || 'code';
     const code = codeRaw.replace(/\s+$/, '');
 
@@ -84,6 +107,7 @@ const parseMessageContent = (content: string, messageId: number): Segment[] => {
     blockIndex += 1;
   }
 
+  // Trailing text after the last code block
   if (lastIndex < content.length) {
     const textPart = content.slice(lastIndex);
     if (textPart.trim().length > 0) {
@@ -95,6 +119,7 @@ const parseMessageContent = (content: string, messageId: number): Segment[] => {
     }
   }
 
+  // If no blocks were found, treat whole content as a single text segment
   if (segments.length === 0) {
     segments.push({
       type: 'text',
@@ -106,7 +131,13 @@ const parseMessageContent = (content: string, messageId: number): Segment[] => {
   return segments;
 };
 
+/* ────────────────────────────────────────────────────────────
+ * Component
+ * ──────────────────────────────────────────────────────────── */
+
 const App: React.FC = () => {
+  /* ── Chat state ────────────────────────────────────────── */
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -123,28 +154,62 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  /* ── UI state ──────────────────────────────────────────── */
+
+  const [theme, setTheme] = useState<'dark' | 'light'>('light');
   const [copiedBlockId, setCopiedBlockId] = useState<string | null>(null);
-  const [model, setModel] = useState<string>(MODEL_OPTIONS[0].value);
+
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  /* ── Auth state (demo only; backend wiring comes later) ── */
+
+  const [user, setUser] = useState<AuthUser | null>({
+    email: 'demo@user.com',
+  });
+  const [authToken, setAuthToken] = useState<string | null>(null);
+
+  /* ── Refs ──────────────────────────────────────────────── */
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  /* ── Derived values ───────────────────────────────────── */
+
+  const model = MODEL_NAME;
+  const currentModelLabel = MODEL_NAME;
+  const visibleMessages = messages.filter((m) => m.role !== 'system');
+
+  /* ────────────────────────────────────────────────────────
+   * UI Handlers
+   * ──────────────────────────────────────────────────────── */
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
-  const handleModelChange: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
-    setModel(e.target.value);
+  const openSettings = () => setIsSettingsOpen(true);
+  const closeSettings = () => setIsSettingsOpen(false);
+
+  /**
+   * Clear local auth state and reset demo user.
+   */
+  const handleLogout = () => {
+    setUser(null);
+    setAuthToken(null);
+    localStorage.removeItem('nexora_token');
+    localStorage.removeItem('nexora_email');
+    localStorage.removeItem('nexora_user_id');
   };
 
-  const currentModelLabel =
-    MODEL_OPTIONS.find((m) => m.value === model)?.label ?? model;
-
-  // auto-scroll na dno kad se promijene poruke
+  /**
+   * Auto-scroll to the latest message whenever messages change.
+   */
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  /**
+   * Send user input to the Ollama chat API and stream back assistant tokens.
+   */
   const handleSend = async () => {
     const trimmed = input.trim();
     if (!trimmed || isLoading) return;
@@ -162,11 +227,12 @@ const App: React.FC = () => {
 
     const baseMessages = [...messages, userMsg];
 
-    // dodaj user poruku + prazan assistant za streaming
+    // Add user message and an empty assistant message to be filled as tokens arrive
     setMessages([
       ...baseMessages,
       { id: assistantId, role: 'assistant', content: '' },
     ]);
+
     setInput('');
     setIsLoading(true);
 
@@ -202,8 +268,8 @@ const App: React.FC = () => {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
 
+        const chunk = decoder.decode(value, { stream: true });
         const lines = chunk.split('\n').filter((l) => l.trim().length > 0);
 
         for (const line of lines) {
@@ -241,6 +307,9 @@ const App: React.FC = () => {
     }
   };
 
+  /**
+   * Submit on Enter (single line), allow Shift+Enter for multiline input.
+   */
   const handleKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -248,6 +317,9 @@ const App: React.FC = () => {
     }
   };
 
+  /**
+   * Copy a code block to clipboard and show temporary "copied" state.
+   */
   const handleCopyBlock = async (blockId: string, code: string) => {
     try {
       await navigator.clipboard.writeText(code);
@@ -259,7 +331,9 @@ const App: React.FC = () => {
     }
   };
 
-  const visibleMessages = messages.filter((m) => m.role !== 'system');
+  /* ────────────────────────────────────────────────────────
+   * Render
+   * ──────────────────────────────────────────────────────── */
 
   return (
     <div
@@ -268,7 +342,7 @@ const App: React.FC = () => {
       }`}
     >
       <div className="chat-shell">
-        {/* HEADER */}
+        {/* ── Top navigation bar ───────────────────────────── */}
         <header className="topbar">
           <div className="topbar-main">
             <div className="topbar-title">NEXORA</div>
@@ -279,18 +353,6 @@ const App: React.FC = () => {
           </div>
 
           <div className="topbar-right">
-            <select
-              className="model-select"
-              value={model}
-              onChange={handleModelChange}
-            >
-              {MODEL_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-
             <button
               type="button"
               className="theme-toggle"
@@ -298,11 +360,54 @@ const App: React.FC = () => {
               aria-label="Promijeni temu"
             />
 
-            <div className="topbar-badge">LOCAL ONLY</div>
+            <button
+              type="button"
+              className="settings-btn"
+              onClick={openSettings}
+              aria-label="Otvori postavke"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="22"
+                height="22"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82-.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.57 0 1.11.24 1.51.67A2 2 0 1 1 19.4 15z"></path>
+              </svg>
+            </button>
+
+            {user && (
+              <button
+                type="button"
+                className="logout-btn"
+                onClick={handleLogout}
+                aria-label="Odjava"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                  <polyline points="10 17 15 12 10 7"></polyline>
+                  <line x1="15" y1="12" x2="3" y2="12"></line>
+                </svg>
+              </button>
+            )}
           </div>
         </header>
 
-        {/* GLAVNI DIO */}
+        {/* ── Main chat layout ─────────────────────────────── */}
         <div className="chat-body">
           <main className="chat-main">
             <div className="messages">
@@ -339,7 +444,9 @@ const App: React.FC = () => {
                     }`}
                   >
                     <div
-                      className={`avatar ${isUser ? 'avatar-user' : 'avatar-bot'}`}
+                      className={`avatar ${
+                        isUser ? 'avatar-user' : 'avatar-bot'
+                      }`}
                     >
                       {isUser ? 'TY' : '</>'}
                     </div>
@@ -384,12 +491,13 @@ const App: React.FC = () => {
                                     : 'Kopiraj'}
                                 </button>
                               </div>
+
                               <div className="code-body">
                                 {(() => {
                                   const lang = resolveLanguage(seg.lang);
                                   const highlighted = Prism.highlight(
                                     seg.content,
-                                    // @ts-ignore
+                                    // @ts-ignore – Prism language registry typing is loose
                                     Prism.languages[lang] ||
                                       Prism.languages.javascript,
                                     lang,
@@ -420,7 +528,7 @@ const App: React.FC = () => {
             </div>
           </main>
 
-          {/* INPUT */}
+          {/* ── Input area ─────────────────────────────────── */}
           <form
             className="input-row"
             onSubmit={(e) => {
@@ -448,6 +556,14 @@ const App: React.FC = () => {
           </form>
         </div>
 
+        {/* ── Settings modal (separate component) ──────────── */}
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={closeSettings}
+          user={user}
+        />
+
+        {/* ── Global error banner ─────────────────────────── */}
         {error && <div className="error-banner">{error}</div>}
       </div>
     </div>
