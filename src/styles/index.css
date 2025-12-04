@@ -1,6 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
 @import "prismjs/themes/prism-tomorrow.css";
 
+/* =========================
+   ROOT / GLOBAL
+   ========================= */
+
 :root {
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
     "SF Pro Text", "Segoe UI", sans-serif;
@@ -21,15 +25,16 @@ body,
   height: 100%;
 }
 
-/* APP LAYOUT */
+/* =========================
+   APP LAYOUT
+   ========================= */
 
 .app-root {
-  height: 100vh;  /* 👈 umjesto min-height */
+  height: 100vh;
   display: flex;
   justify-content: center;
   padding: 24px clamp(16px, 4vw, 40px);
   transition: background 0.25s ease-out, color 0.25s ease-out;
-  box-sizing: border-box; /* već je globalno, ali ne smeta naglasiti */
 }
 
 .chat-shell {
@@ -39,10 +44,12 @@ body,
   display: flex;
   flex-direction: column;
   gap: 12px;
-  height: 100%;      /* 👈 ključno */
+  height: 100%;
 }
 
-/* THEME BACKGROUNDS */
+/* =========================
+   THEMES
+   ========================= */
 
 .theme-dark {
   background: radial-gradient(circle at top, #020617 0, #020617 45%, #000 100%);
@@ -55,7 +62,9 @@ body,
   color-scheme: light;
 }
 
-/* HEADER */
+/* =========================
+   HEADER
+   ========================= */
 
 .topbar {
   position: sticky;
@@ -68,7 +77,7 @@ body,
   padding: 10px 4px 12px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.45);
   backdrop-filter: blur(18px);
-  background: transparent; /* čisto, bez kvadrata */
+  background: transparent;
 }
 
 .topbar-main {
@@ -132,7 +141,7 @@ body,
   background: rgba(255, 255, 255, 0.9);
 }
 
-/* MODEL SELECT */
+/* MODEL SELECT (ako ikad vratiš) */
 
 .model-select {
   border-radius: 999px;
@@ -149,7 +158,9 @@ body,
   color: #020617;
 }
 
-/* LIGHT/DARK SWITCH */
+/* =========================
+   THEME TOGGLE
+   ========================= */
 
 .theme-toggle {
   position: relative;
@@ -171,7 +182,7 @@ body,
   border-radius: 50%;
   left: 3px;
   top: 3px;
-  transition: transform 0.25s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Dark */
@@ -196,22 +207,22 @@ body,
   background: #0ea5e9;
 }
 
-/* GLAVNI DIO – PORUKE + INPUT */
+/* =========================
+   MAIN CHAT AREA
+   ========================= */
 
 .chat-body {
   display: flex;
   flex-direction: column;
-  flex: 1;     /* ispuni sav preostali prostor ispod headera */
+  flex: 1;
   min-height: 0;
 }
-
-/* PORUKE */
 
 .chat-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;   /* 👈 dodaj ovo */
+  min-height: 0;
 }
 
 .messages {
@@ -220,10 +231,10 @@ body,
   display: flex;
   flex-direction: column;
   gap: 12px;
-  overflow-y: auto;       /* scroll samo ovdje */
+  overflow-y: auto;
   scroll-behavior: smooth;
   scrollbar-width: thin;
-  min-height: 0;          /* 👈 bitno kod flex layouta */
+  min-height: 0;
 }
 
 .messages::-webkit-scrollbar {
@@ -235,7 +246,9 @@ body,
   background: rgba(148, 163, 184, 0.6);
 }
 
-/* Poruke centrirane po širini */
+/* =========================
+   MESSAGE ROWS
+   ========================= */
 
 .message-row {
   display: flex;
@@ -288,7 +301,9 @@ body,
   opacity: 0.9;
 }
 
-/* AVATAR */
+/* =========================
+   AVATARS
+   ========================= */
 
 .avatar {
   width: 32px;
@@ -325,7 +340,9 @@ body,
   color: #020617;
 }
 
-/* BUBBLE */
+/* =========================
+   BUBBLES
+   ========================= */
 
 .bubble {
   max-width: 78%;
@@ -336,7 +353,7 @@ body,
   border: 1px solid transparent;
 }
 
-/* Dark bubbles */
+/* Dark */
 
 .theme-dark .bubble-user {
   background: linear-gradient(to bottom right, #e5e7eb, #f9fafb);
@@ -349,7 +366,7 @@ body,
   border-color: rgba(148, 163, 184, 0.9);
 }
 
-/* Light bubbles */
+/* Light */
 
 .theme-light .bubble-user {
   background: #020617;
@@ -362,7 +379,7 @@ body,
   border-color: rgba(148, 163, 184, 0.7);
 }
 
-/* BUBBLE HEADER */
+/* Header u bubbleu */
 
 .bubble-header {
   display: flex;
@@ -379,7 +396,7 @@ body,
   opacity: 0.7;
 }
 
-/* TEKST SEGMENT */
+/* Text segment */
 
 .segment-text {
   margin-bottom: 6px;
@@ -387,7 +404,9 @@ body,
   white-space: pre-wrap;
 }
 
-/* CODE BLOCK */
+/* =========================
+   CODE BLOCKS
+   ========================= */
 
 .code-block {
   margin-top: 6px;
@@ -406,8 +425,6 @@ body,
   background: #0b1120;
   color: #e5e7eb;
 }
-
-/* CODE HEADER – toolbar s točkicama */
 
 .code-header {
   display: flex;
@@ -448,7 +465,7 @@ body,
   opacity: 0.8;
 }
 
-/* KOPIRAJ BUTTON – bez simbola */
+/* Kopiraj gumb */
 
 .code-copy-btn {
   display: flex;
@@ -489,8 +506,7 @@ body,
   border-color: rgba(255, 255, 255, 0.35);
 }
 
-
-/* CODE BODY */
+/* Code body */
 
 .code-body {
   padding: 8px 10px;
@@ -505,7 +521,9 @@ body,
   font-size: 12px;
 }
 
-/* ERROR */
+/* =========================
+   ERROR BANNER
+   ========================= */
 
 .error-banner {
   margin-top: 8px;
@@ -526,51 +544,56 @@ body,
   color: #7f1d1d;
 }
 
-/* INPUT – STICKY DNO */
+/* =========================
+   INPUT – COMMAND BAR
+   ========================= */
 
 .input-row {
   position: sticky;
   bottom: 0;
-  padding: 8px 0 10px;  /* malo prostora dolje da diše */
+  padding: 8px 0 12px;
   margin-top: 4px;
-  background: transparent; /* 🔹 nema više plave trake */
+  background: transparent;
 }
 
-/* više ne trebamo posebni background za light */
 .theme-light .input-row {
   background: transparent;
 }
 
-
+/* Vanjski “bar” oko inputa + gumba */
 .input-inner {
   display: flex;
+  align-items: center;
   gap: 10px;
-  border-radius: 999px;
-  padding: 6px;
-  border: 1px solid rgba(148, 163, 184, 0.6);
-  align-items: center; /* centriraj Pošalji i textarea */
+  border-radius: 18px;
+  padding: 6px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
 }
 
 .theme-dark .input-inner {
-  background: rgba(15, 23, 42, 0.95);
+  background: rgba(15, 23, 42, 0.96);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.55);
 }
 
 .theme-light .input-inner {
-  background: rgba(255, 255, 255, 0.98);
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
 }
 
-/* TEXTAREA */
+/* POLJE ZA TEKST */
 
 .chat-input {
   flex: 1;
   resize: none;
-  border-radius: 999px;
   border: none;
-  padding: 8px 12px;
+  border-radius: 12px;
+  padding: 10px 12px;
   font-size: 14px;
+  line-height: 1.5;
+  font-family: inherit;
   background: transparent;
   outline: none;
-  min-height: 38px; /* ista visina kao gumb */
+  min-height: 40px; /* u paru s gumbom */
 }
 
 .theme-dark .chat-input {
@@ -585,52 +608,112 @@ body,
   color: #9ca3af;
 }
 
-/* SEND BUTTON – GLASSY, centriran */
+/* GUMB “Pošalji” – clean, profesionalan */
 
 .send-btn {
-  border: none;
-  border-radius: 14px;
-  padding: 0 22px;
-  height: 38px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: none;
+
   transition:
-    background 0.2s ease-out,
-    box-shadow 0.2s ease-out,
-    transform 0.12s ease-out;
-  backdrop-filter: blur(10px);
+    background 0.18s ease-out,
+    color 0.18s ease-out,
+    box-shadow 0.18s ease-out,
+    transform 0.12s ease-out,
+    opacity 0.12s ease-out;
 }
+
+/* DARK THEME – tamni pill s laganim plavim glow-om */
 
 .theme-dark .send-btn {
-  background: rgba(255, 255, 255, 0.08);
-  color: #f9fafb;
+  background: radial-gradient(circle at top, #0b1120 0, #020617 60%);
+  border-color: rgba(148, 163, 184, 0.7);
+  color: #e5e7eb;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.8);
 }
+
+.theme-dark .send-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.95);
+  border-color: #38bdf8;              /* light blue edge */
+}
+
+.theme-dark .send-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.8);
+}
+
+/* LIGHT THEME – tamni gumb na bijeloj pozadini */
 
 .theme-light .send-btn {
-  background: rgba(0, 0, 0, 0.1);
-  color: #111827;
+  background: #111827;
+  border-color: rgba(15, 23, 42, 0.9);
+  color: #f9fafb;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.25);
 }
 
-.send-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+.theme-light .send-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.35);
 }
 
-.send-btn:active:not(:disabled) {
+.theme-light .send-btn:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.3);
 }
+
+/* Disabled – isti stil, samo manje istaknuto */
 
 .send-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: default;
+  box-shadow: none;
 }
 
-/* RESPONSIVE */
+/* Label i ikonica u gumbu */
+
+.send-label {
+  font-size: 13px;
+}
+
+.send-icon {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* Spinner ostaje isti kao prije – samo da bude vizualno centriran */
+
+.send-spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid rgba(248, 250, 252, 0.4);
+  border-top-color: #38bdf8;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
 
 @media (max-width: 640px) {
   .app-root {

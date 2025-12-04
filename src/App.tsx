@@ -527,7 +527,6 @@ const App: React.FC = () => {
               <div ref={messagesEndRef} />
             </div>
           </main>
-
           {/* ── Input area ─────────────────────────────────── */}
           <form
             className="input-row"
@@ -545,12 +544,25 @@ const App: React.FC = () => {
                 onKeyDown={handleKeyDown}
                 rows={2}
               />
+
               <button
                 type="submit"
                 className="send-btn"
                 disabled={isLoading || !input.trim()}
               >
-                {isLoading ? 'Razmišljam…' : 'Pošalji'}
+                {isLoading ? (
+                  <>
+                    <span className="send-spinner" aria-hidden="true" />
+                    <span className="send-label">Razmišljam…</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="send-label">Pošalji</span>
+                    <span className="send-icon" aria-hidden="true">
+                      ➤
+                    </span>
+                  </>
+                )}
               </button>
             </div>
           </form>
