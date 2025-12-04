@@ -1,0 +1,738 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+@import "prismjs/themes/prism-tomorrow.css";
+
+/* =========================
+   ROOT / GLOBAL
+   ========================= */
+
+:root {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+    "SF Pro Text", "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+
+/* RESET */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* =========================
+   APP LAYOUT
+   ========================= */
+
+.app-root {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 24px clamp(16px, 4vw, 40px);
+  transition: background 0.25s ease-out, color 0.25s ease-out;
+}
+
+.chat-shell {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+/* =========================
+   THEMES
+   ========================= */
+
+.theme-dark {
+  background: radial-gradient(circle at top, #020617 0, #020617 45%, #000 100%);
+  color: #f9fafb;
+}
+
+.theme-light {
+  background: radial-gradient(circle at top, #f4f4f5 0, #fafafa 55%, #e5e7eb 100%);
+  color: #020617;
+  color-scheme: light;
+}
+
+/* =========================
+   HEADER
+   ========================= */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 4px 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.45);
+  backdrop-filter: blur(18px);
+  background: transparent;
+}
+
+.topbar-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.topbar-title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.topbar-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.sub-label {
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 11px;
+}
+
+.sub-model {
+  font-size: 12px;
+}
+
+.mono {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-badge {
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+}
+
+.theme-dark .topbar-badge {
+  color: #e5e7eb;
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.theme-light .topbar-badge {
+  color: #020617;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* MODEL SELECT (ako ikad vratiš) */
+
+.model-select {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: rgba(15, 23, 42, 0.95);
+  color: #e5e7eb;
+  outline: none;
+}
+
+.theme-light .model-select {
+  background: rgba(255, 255, 255, 0.96);
+  color: #020617;
+}
+
+/* =========================
+   THEME TOGGLE
+   ========================= */
+
+.theme-toggle {
+  position: relative;
+  width: 46px;
+  height: 24px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  transition: all 0.25s ease-out;
+}
+
+.theme-toggle::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  left: 3px;
+  top: 3px;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark */
+
+.theme-dark .theme-toggle {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.theme-dark .theme-toggle::before {
+  transform: translateX(0);
+  background: #facc15;
+}
+
+/* Light */
+
+.theme-light .theme-toggle {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.theme-light .theme-toggle::before {
+  transform: translateX(20px);
+  background: #0ea5e9;
+}
+
+/* =========================
+   MAIN CHAT AREA
+   ========================= */
+
+.chat-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.messages {
+  flex: 1;
+  padding: 8px 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  min-height: 0;
+}
+
+.messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.6);
+}
+
+/* =========================
+   MESSAGE ROWS
+   ========================= */
+
+.message-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  padding-inline: 4px;
+  animation: fadeUp 0.18s ease-out;
+}
+
+@keyframes fadeUp {
+  from {
+    transform: translateY(4px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.user-row {
+  justify-content: flex-end;
+}
+
+.user-row .avatar {
+  order: 2;
+}
+
+.user-row .bubble {
+  order: 1;
+}
+
+.assistant-row {
+  justify-content: flex-start;
+}
+
+/* EMPTY STATE */
+
+.empty-state {
+  align-self: center;
+  width: 100%;
+  max-width: 560px;
+  border-radius: 16px;
+  border: 1px dashed rgba(148, 163, 184, 0.6);
+  padding: 12px 16px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+/* =========================
+   AVATARS
+   ========================= */
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+}
+
+.theme-dark .avatar-user {
+  background: #f9fafb;
+  color: #020617;
+}
+
+.theme-dark .avatar-bot {
+  background: #020617;
+  color: #e5e7eb;
+}
+
+.theme-light .avatar-user {
+  background: #020617;
+  color: #f9fafb;
+}
+
+.theme-light .avatar-bot {
+  background: #f9fafb;
+  color: #020617;
+}
+
+/* =========================
+   BUBBLES
+   ========================= */
+
+.bubble {
+  max-width: 78%;
+  border-radius: 18px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px solid transparent;
+}
+
+/* Dark */
+
+.theme-dark .bubble-user {
+  background: linear-gradient(to bottom right, #e5e7eb, #f9fafb);
+  color: #020617;
+}
+
+.theme-dark .bubble-assistant {
+  background: #020617;
+  color: #e5e7eb;
+  border-color: rgba(148, 163, 184, 0.9);
+}
+
+/* Light */
+
+.theme-light .bubble-user {
+  background: #020617;
+  color: #f9fafb;
+}
+
+.theme-light .bubble-assistant {
+  background: #ffffff;
+  color: #020617;
+  border-color: rgba(148, 163, 184, 0.7);
+}
+
+/* Header u bubbleu */
+
+.bubble-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.role-label {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+/* Text segment */
+
+.segment-text {
+  margin-bottom: 6px;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+/* =========================
+   CODE BLOCKS
+   ========================= */
+
+.code-block {
+  margin-top: 6px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+}
+
+/* Dark code */
+.theme-dark .code-block {
+  background: #020617;
+}
+
+/* Light code */
+.theme-light .code-block {
+  background: #0b1120;
+  color: #e5e7eb;
+}
+
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  font-size: 11px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.9);
+}
+
+.code-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.code-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.code-dot.red {
+  background: #f97373;
+}
+
+.code-dot.yellow {
+  background: #facc15;
+}
+
+.code-dot.green {
+  background: #4ade80;
+}
+
+.code-lang {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  opacity: 0.8;
+}
+
+/* Kopiraj gumb */
+
+.code-copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e7eb;
+  font-size: 11px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.code-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.code-copy-btn:active {
+  transform: translateY(0);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.theme-light .code-copy-btn {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e7eb;
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+.theme-light .code-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* Code body */
+
+.code-body {
+  padding: 8px 10px;
+}
+
+.code-body pre {
+  margin: 0;
+  white-space: pre;
+  overflow-x: auto;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+}
+
+/* =========================
+   ERROR BANNER
+   ========================= */
+
+.error-banner {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.theme-dark .error-banner {
+  background: rgba(220, 38, 38, 0.2);
+  border: 1px solid rgba(248, 113, 113, 0.9);
+  color: #fee2e2;
+}
+
+.theme-light .error-banner {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(185, 28, 28, 0.8);
+  color: #7f1d1d;
+}
+
+/* =========================
+   INPUT – COMMAND BAR
+   ========================= */
+
+.input-row {
+  position: sticky;
+  bottom: 0;
+  padding: 8px 0 12px;
+  margin-top: 4px;
+  background: transparent;
+}
+
+.theme-light .input-row {
+  background: transparent;
+}
+
+/* Vanjski “bar” oko inputa + gumba */
+.input-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 18px;
+  padding: 6px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+}
+
+.theme-dark .input-inner {
+  background: rgba(15, 23, 42, 0.96);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.55);
+}
+
+.theme-light .input-inner {
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+}
+
+/* POLJE ZA TEKST */
+
+.chat-input {
+  flex: 1;
+  resize: none;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  font-family: inherit;
+  background: transparent;
+  outline: none;
+  min-height: 40px; /* u paru s gumbom */
+}
+
+.theme-dark .chat-input {
+  color: #f9fafb;
+}
+
+.theme-light .chat-input {
+  color: #020617;
+}
+
+.chat-input::placeholder {
+  color: #9ca3af;
+}
+
+/* GUMB “Pošalji” – clean, profesionalan */
+
+.send-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: none;
+
+  transition:
+    background 0.18s ease-out,
+    color 0.18s ease-out,
+    box-shadow 0.18s ease-out,
+    transform 0.12s ease-out,
+    opacity 0.12s ease-out;
+}
+
+/* DARK THEME – tamni pill s laganim plavim glow-om */
+
+.theme-dark .send-btn {
+  background: radial-gradient(circle at top, #0b1120 0, #020617 60%);
+  border-color: rgba(148, 163, 184, 0.7);
+  color: #e5e7eb;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.8);
+}
+
+.theme-dark .send-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.95);
+  border-color: #38bdf8;              /* light blue edge */
+}
+
+.theme-dark .send-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.8);
+}
+
+/* LIGHT THEME – tamni gumb na bijeloj pozadini */
+
+.theme-light .send-btn {
+  background: #111827;
+  border-color: rgba(15, 23, 42, 0.9);
+  color: #f9fafb;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.25);
+}
+
+.theme-light .send-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.35);
+}
+
+.theme-light .send-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.3);
+}
+
+/* Disabled – isti stil, samo manje istaknuto */
+
+.send-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* Label i ikonica u gumbu */
+
+.send-label {
+  font-size: 13px;
+}
+
+.send-icon {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* Spinner ostaje isti kao prije – samo da bude vizualno centriran */
+
+.send-spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid rgba(248, 250, 252, 0.4);
+  border-top-color: #38bdf8;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 640px) {
+  .app-root {
+    padding: 12px;
+  }
+
+  .chat-shell {
+    max-width: 100%;
+  }
+
+  .bubble {
+    max-width: 100%;
+  }
+
+  .topbar-title {
+    font-size: 16px;
+  }
+
+  .topbar-badge {
+    display: none;
+  }
+}
