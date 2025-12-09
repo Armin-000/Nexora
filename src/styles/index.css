@@ -384,6 +384,35 @@ body {
   overflow-wrap: anywhere;
 }
 
+/* Copy cijelog odgovora (assistant bubble) */
+
+.message-copy-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  transition:
+    opacity 0.15s ease,
+    transform 0.1s ease;
+}
+
+.message-copy-btn:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.message-copy-btn:active {
+  transform: translateY(0);
+}
+
+.message-copy-check {
+  font-size: 0.9rem;
+}
+
 /* Terminal (code-block) */
 
 .code-block {
@@ -397,11 +426,11 @@ body {
 }
 
 .theme-dark .code-block {
-  background: #020617;
+  background: #000000;
 }
 
 .theme-light .code-block {
-  background: #0b1120;
+  background: #000000;
   color: #e5e7eb;
 }
 
@@ -422,6 +451,7 @@ body {
   font-size: 12px;
   line-height: 1.5;
   min-width: 100%;
+  border-radius: 10px;
 }
 
 .code-header {
@@ -469,9 +499,9 @@ body {
   gap: 6px;
   padding: 3px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  background: rgba(255, 255, 255, 0.06);
-  color: #e5e7eb;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.06);
+  color: #ffffff;
   font-size: 11px;
   cursor: pointer;
   transition:
@@ -488,7 +518,7 @@ body {
 
 .code-copy-btn:active {
   transform: translateY(0);
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .theme-light .code-copy-btn {
@@ -498,7 +528,7 @@ body {
 }
 
 .theme-light .code-copy-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 0, 0, 0.12);
   border-color: rgba(255, 255, 255, 0.35);
 }
 
