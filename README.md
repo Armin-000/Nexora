@@ -1,90 +1,104 @@
-# Nexora — Local AI Coding Assistant
+Nexora — Local AI Coding Assistant
 
-Nexora is a lightweight local coding assistant built with React, TypeScript, and Vite.  
-It communicates with Ollama models running locally (such as `llama3.2:3b`) and provides a clean, responsive chat interface with syntax-highlighted code blocks and streaming responses.
+Nexora is a lightweight local coding assistant built with React, TypeScript, and Vite.
+It communicates with Ollama models running locally (e.g., llama3.2:3b) and provides a clean, responsive chat interface with streaming responses and syntax-highlighted code blocks.
 
-This project is fully local and does not rely on any external APIs.
+This project is fully local and does not rely on external APIs.
 
----
+Features
 
-## Features
+Local AI chat powered by the Ollama API
 
-- Local AI chat powered by the **Ollama** API
-- **Streaming** token responses
-- Syntax highlighting using **Prism.js**
-- Light and dark **theme** support
-- Settings modal (Account and Help tabs)
-- **Copy-to-clipboard** for code blocks
-- Clean separation of **UI**, **chat logic** and **types**
-- Fully local processing (no cloud calls)
+Real-time token streaming
 
----
+Syntax highlighting via Prism.js
 
-## Project Structure
+Light & dark theme support
 
-```text
+Settings modal (Account + Help)
+
+Copy-to-clipboard for code blocks
+
+Clear separation of UI, chat logic and types
+
+Fully local processing (no cloud calls)
+
+Project Structure
 NEXORA/
 ├── favicon/                   # App icons
-├── node_modules/              # Installed dependencies
+├── node_modules/
 ├── src/
-│   ├── App.tsx                # Main UI: layout, rendering, theme, settings, input
-│   ├── main.tsx               # React entry point, mounts App into index.html
-│   ├── prism.d.ts             # Type declarations for Prism.js
-│   ├── types.ts               # Shared TypeScript types (Message, Role, AuthUser, OllamaChunk)
+│   ├── App.tsx                # Main UI
+│   ├── main.tsx               # React entry point
+│   ├── prism.d.ts             # Prism.js type declarations
+│   ├── types.ts               # Shared TypeScript types
 │   ├── hooks/
-│   │   └── useChat.ts         # Chat logic: streaming, error handling, SYSTEM_PROMPT, model name
+│   │   └── useChat.ts         # Chat + streaming logic
 │   ├── components/
-│   │   └── settingsModal.tsx  # Settings modal component
+│   │   └── settingsModal.tsx  # Settings modal
+│   ├── pages/
+│   │   ├── Landing.tsx
+│   │   ├── Login.tsx
+│   │   └── Register.tsx
 │   ├── styles/
-│       ├── index.css          # Global application styles (chat layout, themes, bubbles)
-│       └── settings.css       # Modal-specific styles
-├── index.html                 # Base HTML template used by Vite
-├── package.json               # Dependencies and script definitions
-├── package-lock.json          # Locked dependency versions
-├── tsconfig.json              # TypeScript configuration
-├── vite.config.ts             # Vite configuration
-└── README.md                  # Documentation
+│       ├── index.css          # Global styles
+│       ├── settings.css       # Modal styles
+│       └── AdminPanel.css     # Admin panel styles
+├── index.html
+├── package.json
+├── package-lock.json
+├── tsconfig.json
+├── vite.config.ts
+└── README.md
 
-
-
-
-
-## Architecture Overview
-
-| File | Description |
-|------|-------------|
-| **App.tsx** | UI layer responsible for rendering the interface, handling user interaction, and managing visual state (themes, modal, input, etc.) |
-| **useChat.ts** | Core chat logic: communicates with Ollama, streams responses, manages messages, errors, loading states and SYSTEM prompt logic |
-| **types.ts** | Centralized TypeScript types shared across the project |
-
-
-
-### Installation
+Architecture Overview
+File	Purpose
+App.tsx	UI rendering, themes, modal handling, user input
+useChat.ts	Ollama communication, streaming, errors, system prompt logic
+types.ts	Centralized TypeScript interfaces
+settingsModal.tsx	User settings modal
+Installation
 
 Install dependencies:
-```
+
 npm install
-```
+
 
 Install PrismJS:
-```
+
 npm install prismjs
-```
 
-Install react - markdown
-```
+
+Install React Markdown:
+
 npm install react-markdown
-```
 
-Run development server:
-```
+
+Optional: React Router
+
+npm install react-router-dom
+
+Running the App
+
+Start the dev server:
+
 npm run dev
-```
+
 
 Application runs at:
-```
+
 http://localhost:5173
-```
+
+Ollama Setup
+
+Download Ollama:
+https://ollama.com/
+
+Pull the model:
+
+ollama pull llama3.2:3b
 
 
+Run the model:
 
+ollama run llama3.2:3b

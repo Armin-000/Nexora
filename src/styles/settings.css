@@ -44,7 +44,8 @@
    ========================= */
 
 .settings-btn,
-.logout-btn {
+.logout-btn,
+.admin-btn {
   width: 34px;
   height: 34px;
   border: none;
@@ -65,23 +66,27 @@
 }
 
 .settings-btn:hover,
-.logout-btn:hover {
+.logout-btn:hover,
+.admin-btn:hover {
   background: rgba(255, 255, 255, 0.06);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
   transform: translateY(-1px);
 }
 
 .theme-light .settings-btn:hover,
-.theme-light .logout-btn:hover {
+.theme-light .logout-btn:hover,
+.theme-light .admin-btn:hover {
   background: rgba(0, 0, 0, 0.06);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
 }
 
 .settings-btn:active,
-.logout-btn:active {
+.logout-btn:active,
+.admin-btn:active {
   transform: translateY(0);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
 }
+
 
 /* =========================
    MODAL BACKDROP

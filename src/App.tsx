@@ -6,6 +6,8 @@ import React, {
 } from 'react';
 import Prism from 'prismjs';
 import ReactMarkdown from 'react-markdown';
+import { useNavigate } from 'react-router-dom';
+
 
 // Prism languages (load order matters)
 import 'prismjs/components/prism-markup'; // HTML
@@ -17,6 +19,7 @@ import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-tsx';
 
 import SettingsModal from './components/settingsModal';
+import AdminPanel from './components/AdminPanel';
 import { useChat } from './hooks/useChat';
 import type { AuthUser } from './types';
 
@@ -200,11 +203,13 @@ const App: React.FC = () => {
     handleStop,
   } = useChat();
 
+  const navigate = useNavigate();
   const [input, setInput] = useState('');
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
   const [copiedBlockId, setCopiedBlockId] = useState<string | null>(null);
   const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [user, setUser] = useState<AuthUser | null>({
     email: 'demo@user.com',
   });
@@ -232,7 +237,10 @@ const App: React.FC = () => {
     localStorage.removeItem('nexora_token');
     localStorage.removeItem('nexora_email');
     localStorage.removeItem('nexora_user_id');
+    // nakon odjave vrati korisnika na početnu (Landing)
+    navigate('/');
   };
+
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -326,6 +334,31 @@ const App: React.FC = () => {
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82-.33l-.06-.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.57 0 1.11.24 1.51.67A2 2 0 1 1 19.4 15z"></path>
               </svg>
             </button>
+
+            {/* ADMIN ikonica – trenutno vidljiva svim prijavljenim korisnicima
+               Kasnije: user?.email === 'tvoj-admin-email@domena.com' && ( ... ) */}
+            {user && (
+              <button
+                type="button"
+                className="admin-btn"
+                onClick={() => setIsAdminOpen(true)}
+                aria-label="Admin panel"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="7" r="4"></circle>
+                  <path d="M4 21c0-4 4-7 8-7s8 3 8 7"></path>
+                </svg>
+              </button>
+            )}
 
             {user && (
               <button
@@ -560,6 +593,11 @@ const App: React.FC = () => {
           isOpen={isSettingsOpen}
           onClose={closeSettings}
           user={user}
+        />
+
+        <AdminPanel
+          isOpen={isAdminOpen}
+          onClose={() => setIsAdminOpen(false)}
         />
 
         {error && <div className="error-banner">{error}</div>}
