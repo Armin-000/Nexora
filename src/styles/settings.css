@@ -44,8 +44,7 @@
    ========================= */
 
 .settings-btn,
-.logout-btn,
-.admin-btn {
+.logout-btn {
   width: 34px;
   height: 34px;
   border: none;
@@ -66,27 +65,23 @@
 }
 
 .settings-btn:hover,
-.logout-btn:hover,
-.admin-btn:hover {
+.logout-btn:hover {
   background: rgba(255, 255, 255, 0.06);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
   transform: translateY(-1px);
 }
 
 .theme-light .settings-btn:hover,
-.theme-light .logout-btn:hover,
-.theme-light .admin-btn:hover {
+.theme-light .logout-btn:hover {
   background: rgba(0, 0, 0, 0.06);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
 }
 
 .settings-btn:active,
-.logout-btn:active,
-.admin-btn:active {
+.logout-btn:active {
   transform: translateY(0);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
 }
-
 
 /* =========================
    MODAL BACKDROP
@@ -211,11 +206,11 @@
   border-radius: 999px;
   padding: 5px 16px;
   font-size: 12px;
-  font-weight: 600; /* bold, ali može i inherit */
+  font-weight: 600;
   cursor: pointer;
   background: transparent;
   opacity: 0.75;
-  color: #9ca3af; /* default tekst u dark modu */
+  color: #9ca3af;
   transition:
     opacity 0.18s ease-out,
     transform 0.1s ease-out,
@@ -223,7 +218,7 @@
 }
 
 .theme-light .modal-tab {
-  color: #6b7280; /* default tekst u light modu */
+  color: #6b7280;
 }
 
 .modal-tab.active {
@@ -241,7 +236,7 @@
   color: #111827;
 }
 
-/* Indicator — neutral pill, širina + transform dolaze iz inline style-a iz Reacta */
+/* Indicator */
 
 .tab-indicator {
   position: absolute;
@@ -289,8 +284,6 @@
 .modal[data-tab='delete'] .modal-body {
   min-height: 220px;
 }
-
-/* Animacija promjene taba */
 
 .tab-content {
   animation: tabFadeIn 0.22s ease-out;
@@ -425,7 +418,7 @@
   border-radius: 999px;
   padding: 6px 16px;
   font-size: 12px;
-  font-weight: 600; /* svi gumbi bold */
+  font-weight: 600;
   border: 1px solid transparent;
   cursor: pointer;
   transition:

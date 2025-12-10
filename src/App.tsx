@@ -8,7 +8,6 @@ import Prism from 'prismjs';
 import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
 
-
 // Prism languages (load order matters)
 import 'prismjs/components/prism-markup'; // HTML
 import 'prismjs/components/prism-css';
@@ -19,7 +18,6 @@ import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-tsx';
 
 import SettingsModal from './components/settingsModal';
-import AdminPanel from './components/AdminPanel';
 import { useChat } from './hooks/useChat';
 import type { AuthUser } from './types';
 
@@ -209,7 +207,6 @@ const App: React.FC = () => {
   const [copiedBlockId, setCopiedBlockId] = useState<string | null>(null);
   const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [user, setUser] = useState<AuthUser | null>({
     email: 'demo@user.com',
   });
@@ -219,6 +216,46 @@ const App: React.FC = () => {
 
   const visibleMessages = messages;
   const lastMessageId = visibleMessages[visibleMessages.length - 1]?.id;
+
+  // Pokušaj prepoznati je li user poslao "goli" kod (bez ``` blokova)
+  const looksLikeCode = (text: string) => {
+    const trimmed = text.trim();
+
+    const hasMultipleLines = trimmed.split('\n').length >= 2;
+    const hasAngleBrackets = /<[^>]+>/.test(trimmed); // HTML/JSX
+    const hasJsKeywords = /\b(function|const|let|var|return|import|export)\b/.test(
+      trimmed,
+    );
+    const hasBracesOrSemicolon = /[{};]/.test(trimmed);
+
+    return (
+      hasMultipleLines &&
+      (hasAngleBrackets || hasJsKeywords || hasBracesOrSemicolon)
+    );
+  };
+
+  // Podijeli user poruku na tekst + kod (ako postoji linija koja izgleda kao kod)
+  const splitUserMessage = (text: string) => {
+    const lines = text.split('\n');
+
+    let codeStart = -1;
+
+    for (let i = 0; i < lines.length; i++) {
+      if (looksLikeCode(lines[i])) {
+        codeStart = i;
+        break;
+      }
+    }
+
+    if (codeStart === -1) {
+      return null; // nema linije koja izgleda kao kod
+    }
+
+    const textPart = lines.slice(0, codeStart).join('\n').trim();
+    const codePart = lines.slice(codeStart).join('\n').trim();
+
+    return { textPart, codePart };
+  };
 
   const toggleTheme = useCallback(() => {
     setTheme((prev) => {
@@ -240,7 +277,6 @@ const App: React.FC = () => {
     // nakon odjave vrati korisnika na početnu (Landing)
     navigate('/');
   };
-
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -335,31 +371,6 @@ const App: React.FC = () => {
               </svg>
             </button>
 
-            {/* ADMIN ikonica – trenutno vidljiva svim prijavljenim korisnicima
-               Kasnije: user?.email === 'tvoj-admin-email@domena.com' && ( ... ) */}
-            {user && (
-              <button
-                type="button"
-                className="admin-btn"
-                onClick={() => setIsAdminOpen(true)}
-                aria-label="Admin panel"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  width="20"
-                  height="20"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="7" r="4"></circle>
-                  <path d="M4 21c0-4 4-7 8-7s8 3 8 7"></path>
-                </svg>
-              </button>
-            )}
-
             {user && (
               <button
                 type="button"
@@ -406,16 +417,43 @@ const App: React.FC = () => {
                 const isLastAssistant =
                   isAssistant && msg.id === lastMessageId;
 
-                const segments: Segment[] =
-                  isAssistant
-                    ? parseMessageContent(msg.content, msg.id)
-                    : [
-                        {
-                          type: 'text',
-                          content: msg.content,
-                          key: `${msg.id}-user-text`,
-                        },
-                      ];
+                let segments: Segment[] = parseMessageContent(msg.content, msg.id);
+
+                if (isUser && segments.length === 1 && segments[0].type === 'text') {
+                  const only = segments[0].content;
+
+                  // 1) pokušaj razdvojiti na tekst + kod
+                  const split = splitUserMessage(only);
+
+                  if (split) {
+                    segments = [];
+
+                    if (split.textPart.length > 0) {
+                      segments.push({
+                        type: 'text',
+                        content: split.textPart,
+                        key: `${msg.id}-user-text`,
+                      });
+                    }
+
+                    segments.push({
+                      type: 'code',
+                      content: split.codePart,
+                      lang: 'tsx', // ili 'javascript'
+                      key: `${msg.id}-user-code-auto`,
+                    });
+                  } else if (looksLikeCode(only)) {
+                    // 2) ako je cijela poruka samo kod → cijela ide u code-block
+                    segments = [
+                      {
+                        type: 'code',
+                        content: only,
+                        lang: 'tsx',
+                        key: `${msg.id}-user-code-auto`,
+                      },
+                    ];
+                  }
+                }
 
                 const showInlineTyping =
                   isLastAssistant && isLoading && msg.content.length === 0;
@@ -593,11 +631,6 @@ const App: React.FC = () => {
           isOpen={isSettingsOpen}
           onClose={closeSettings}
           user={user}
-        />
-
-        <AdminPanel
-          isOpen={isAdminOpen}
-          onClose={() => setIsAdminOpen(false)}
         />
 
         {error && <div className="error-banner">{error}</div>}
