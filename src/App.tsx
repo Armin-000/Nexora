@@ -1,34 +1,30 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-} from 'react';
-import Prism from 'prismjs';
-import ReactMarkdown from 'react-markdown';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import Prism from "prismjs";
+import ReactMarkdown from "react-markdown";
+import { useNavigate } from "react-router-dom";
 
+import { useAuth } from "./context/AuthContext";
 
 // Prism languages (load order matters)
-import 'prismjs/components/prism-markup'; // HTML
-import 'prismjs/components/prism-css';
-import 'prismjs/components/prism-clike';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-tsx';
+import "prismjs/components/prism-markup"; // HTML
+import "prismjs/components/prism-css";
+import "prismjs/components/prism-clike";
+import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-jsx";
+import "prismjs/components/prism-typescript";
+import "prismjs/components/prism-tsx";
 
-import SettingsModal from './components/settingsModal';
-import AdminPanel from './components/AdminPanel';
-import { useChat } from './hooks/useChat';
-import type { AuthUser } from './types';
+import SettingsModal from "./components/settingsModal";
+import AdminPanel from "./components/AdminPanel";
+import { useChat } from "./hooks/useChat";
+import type { AuthUser } from "./types";
 
 /* ────────────────────────────────────────────────────────────
  * UI Types
  * ──────────────────────────────────────────────────────────── */
 
 interface Segment {
-  type: 'text' | 'code';
+  type: "text" | "code";
   content: string;
   lang?: string;
   key: string;
@@ -39,16 +35,16 @@ interface Segment {
  * ──────────────────────────────────────────────────────────── */
 
 const resolveLanguage = (raw?: string) => {
-  const lang = (raw || '').toLowerCase();
+  const lang = (raw || "").toLowerCase();
 
-  if (lang === 'js' || lang === 'javascript') return 'javascript';
-  if (lang === 'ts' || lang === 'typescript') return 'typescript';
-  if (lang === 'tsx') return 'tsx';
-  if (lang === 'jsx') return 'jsx';
-  if (lang === 'html' || lang === 'markup') return 'markup';
-  if (lang === 'css') return 'css';
+  if (lang === "js" || lang === "javascript") return "javascript";
+  if (lang === "ts" || lang === "typescript") return "typescript";
+  if (lang === "tsx") return "tsx";
+  if (lang === "jsx") return "jsx";
+  if (lang === "html" || lang === "markup") return "markup";
+  if (lang === "css") return "css";
 
-  return 'javascript';
+  return "javascript";
 };
 
 const parseMessageContent = (content: string, messageId: number): Segment[] => {
@@ -66,21 +62,21 @@ const parseMessageContent = (content: string, messageId: number): Segment[] => {
 
     if (matchStart > lastIndex) {
       const textPart = content.slice(lastIndex, matchStart);
-      const normalized = textPart.replace(/\n{3,}/g, '\n\n');
+      const normalized = textPart.replace(/\n{3,}/g, "\n\n");
       if (normalized.trim().length > 0) {
         segments.push({
-          type: 'text',
+          type: "text",
           content: normalized,
           key: `${messageId}-text-${blockIndex}`,
         });
       }
     }
 
-    const lang = (langRaw || '').trim() || 'code';
-    const code = codeRaw.replace(/\s+$/, '');
+    const lang = (langRaw || "").trim() || "code";
+    const code = codeRaw.replace(/\s+$/, "");
 
     segments.push({
-      type: 'code',
+      type: "code",
       content: code,
       lang,
       key: `${messageId}-code-${blockIndex}`,
@@ -92,10 +88,10 @@ const parseMessageContent = (content: string, messageId: number): Segment[] => {
 
   if (lastIndex < content.length) {
     const textPart = content.slice(lastIndex);
-    const normalized = textPart.replace(/\n{3,}/g, '\n\n');
+    const normalized = textPart.replace(/\n{3,}/g, "\n\n");
     if (normalized.trim().length > 0) {
       segments.push({
-        type: 'text',
+        type: "text",
         content: normalized,
         key: `${messageId}-text-end`,
       });
@@ -104,7 +100,7 @@ const parseMessageContent = (content: string, messageId: number): Segment[] => {
 
   if (segments.length === 0) {
     segments.push({
-      type: 'text',
+      type: "text",
       content,
       key: `${messageId}-text-only`,
     });
@@ -133,7 +129,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     seg.content,
     // @ts-ignore
     Prism.languages[lang] || Prism.languages.javascript,
-    lang,
+    lang
   );
 
   const isCopied = copiedBlockId === seg.key;
@@ -146,14 +142,16 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
           <span className="code-dot yellow" />
           <span className="code-dot green" />
           <span className="code-lang">
-            {(seg.lang || 'code').toUpperCase()}
+            {(seg.lang || "code").toUpperCase()}
           </span>
         </div>
 
         {/* COPY gumb — isti stil kao globalni copy dizajn, ali za code block */}
         <button
           type="button"
-          className={`code-copy-btn message-copy-btn ${isCopied ? 'copied' : ''}`}
+          className={`code-copy-btn message-copy-btn ${
+            isCopied ? "copied" : ""
+          }`}
           onClick={() => onCopy(seg.key, seg.content)}
           aria-label="Kopiraj ovaj kod"
         >
@@ -194,26 +192,17 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
  * ──────────────────────────────────────────────────────────── */
 
 const App: React.FC = () => {
-  const {
-    modelName,
-    messages,
-    isLoading,
-    error,
-    handleSend,
-    handleStop,
-  } = useChat();
+  const { modelName, messages, isLoading, error, handleSend, handleStop } =
+    useChat();
 
   const navigate = useNavigate();
-  const [input, setInput] = useState('');
-  const [theme, setTheme] = useState<'dark' | 'light'>('light');
+  const [input, setInput] = useState("");
+  const [theme, setTheme] = useState<"dark" | "light">("light");
   const [copiedBlockId, setCopiedBlockId] = useState<string | null>(null);
   const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [user, setUser] = useState<AuthUser | null>({
-    email: 'demo@user.com',
-  });
-  const [authToken, setAuthToken] = useState<string | null>(null);
+  const { user: authUser } = useAuth();
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -222,8 +211,8 @@ const App: React.FC = () => {
 
   const toggleTheme = useCallback(() => {
     setTheme((prev) => {
-      const next = prev === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('nexora_theme', next);
+      const next = prev === "dark" ? "light" : "dark";
+      localStorage.setItem("nexora_theme", next);
       return next;
     });
   }, []);
@@ -232,49 +221,50 @@ const App: React.FC = () => {
   const closeSettings = () => setIsSettingsOpen(false);
 
   const handleLogout = () => {
-    setUser(null);
-    setAuthToken(null);
-    localStorage.removeItem('nexora_token');
-    localStorage.removeItem('nexora_email');
-    localStorage.removeItem('nexora_user_id');
-    // nakon odjave vrati korisnika na početnu (Landing)
-    navigate('/');
+    // Implementiraj odjavu koristeći AuthContext, ako je potrebno.
+    // Nakon odjave vrati korisnika na početnu (Landing)
+    // (Pretpostavlja se da AuthContext rješava čišćenje usera/tokena)
+    navigate("/");
   };
 
-
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   useEffect(() => {
-    const stored = localStorage.getItem('nexora_theme');
-    if (stored === 'light' || stored === 'dark') {
+    const stored = localStorage.getItem("nexora_theme");
+    if (stored === "light" || stored === "dark") {
       setTheme(stored);
     }
   }, []);
 
-  const handleKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+  useEffect(() => {
+    if (authUser) {
+      console.log("Decoded user token:", authUser);
+    }
+  }, [authUser]);
+
+  const handleKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement> = (
+    e
+  ) => {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (!isLoading && input.trim()) {
         handleSend(input);
-        setInput('');
+        setInput("");
       }
     }
   };
 
-  const handleCopyBlock = useCallback(
-    async (blockId: string, code: string) => {
-      try {
-        await navigator.clipboard.writeText(code);
-        setCopiedBlockId(blockId);
-        setTimeout(() => setCopiedBlockId(null), 1500);
-      } catch (err) {
-        console.error(err);
-      }
-    },
-    [],
-  );
+  const handleCopyBlock = useCallback(async (blockId: string, code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedBlockId(blockId);
+      setTimeout(() => setCopiedBlockId(null), 1500);
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
 
   const handleCopyMessage = useCallback(
     async (messageId: number, content: string) => {
@@ -286,14 +276,12 @@ const App: React.FC = () => {
         console.error(err);
       }
     },
-    [],
+    []
   );
 
   return (
     <div
-      className={`app-root ${
-        theme === 'dark' ? 'theme-dark' : 'theme-light'
-      }`}
+      className={`app-root ${theme === "dark" ? "theme-dark" : "theme-light"}`}
     >
       <div className="chat-shell">
         <header className="topbar">
@@ -336,8 +324,8 @@ const App: React.FC = () => {
             </button>
 
             {/* ADMIN ikonica – trenutno vidljiva svim prijavljenim korisnicima
-               Kasnije: user?.email === 'tvoj-admin-email@domena.com' && ( ... ) */}
-            {user && (
+               Kasnije: authUser?.email === 'tvoj-admin-email@domena.com' && ( ... ) */}
+            {authUser?.role === "admin" && (
               <button
                 type="button"
                 className="admin-btn"
@@ -360,7 +348,7 @@ const App: React.FC = () => {
               </button>
             )}
 
-            {user && (
+            {authUser && (
               <button
                 type="button"
                 className="logout-btn"
@@ -393,7 +381,9 @@ const App: React.FC = () => {
                 <div className="empty-state">
                   <p>Spreman sam. Napiši pitanje ili zalijepi svoj kod.</p>
                   <ul>
-                    <li>Napiši mi primjer HTML stranice za prodaju automobila.</li>
+                    <li>
+                      Napiši mi primjer HTML stranice za prodaju automobila.
+                    </li>
                     <li>Optimiziraj ovaj JavaScript kod.</li>
                     <li>Objasni mi ovaj TSX kod koji šaljem.</li>
                   </ul>
@@ -401,21 +391,19 @@ const App: React.FC = () => {
               )}
 
               {visibleMessages.map((msg) => {
-                const isUser = msg.role === 'user';
-                const isAssistant = msg.role === 'assistant';
-                const isLastAssistant =
-                  isAssistant && msg.id === lastMessageId;
+                const isUser = msg.role === "user";
+                const isAssistant = msg.role === "assistant";
+                const isLastAssistant = isAssistant && msg.id === lastMessageId;
 
-                const segments: Segment[] =
-                  isAssistant
-                    ? parseMessageContent(msg.content, msg.id)
-                    : [
-                        {
-                          type: 'text',
-                          content: msg.content,
-                          key: `${msg.id}-user-text`,
-                        },
-                      ];
+                const segments: Segment[] = isAssistant
+                  ? parseMessageContent(msg.content, msg.id)
+                  : [
+                      {
+                        type: "text",
+                        content: msg.content,
+                        key: `${msg.id}-user-text`,
+                      },
+                    ];
 
                 const showInlineTyping =
                   isLastAssistant && isLoading && msg.content.length === 0;
@@ -424,32 +412,32 @@ const App: React.FC = () => {
                   <div
                     key={msg.id}
                     className={`message-row ${
-                      isUser ? 'user-row' : 'assistant-row'
+                      isUser ? "user-row" : "assistant-row"
                     }`}
                   >
                     <div
                       className={`avatar ${
-                        isUser ? 'avatar-user' : 'avatar-bot'
+                        isUser ? "avatar-user" : "avatar-bot"
                       }`}
                     >
-                      {isUser ? 'TY' : '</>'}
+                      {isUser ? "TY" : "</>"}
                     </div>
 
                     <div
                       className={`bubble ${
-                        isUser ? 'bubble-user' : 'bubble-assistant'
+                        isUser ? "bubble-user" : "bubble-assistant"
                       }`}
                     >
                       <div className="bubble-header">
                         <span className="role-label">
-                          {isUser ? 'Ti' : 'Nexora'}
+                          {isUser ? "Ti" : "Nexora"}
                         </span>
 
                         {isAssistant && msg.content.length > 0 && (
                           <button
                             type="button"
                             className={`message-copy-btn ${
-                              copiedMessageId === msg.id ? 'copied' : ''
+                              copiedMessageId === msg.id ? "copied" : ""
                             }`}
                             onClick={() =>
                               handleCopyMessage(msg.id, msg.content)
@@ -493,19 +481,19 @@ const App: React.FC = () => {
                           </div>
                         ) : (
                           segments.map((seg) =>
-                            seg.type === 'text' ? (
+                            seg.type === "text" ? (
                               <div className="segment-text" key={seg.key}>
                                 <ReactMarkdown
                                   components={{
                                     p: (props) => (
                                       <p
-                                        style={{ whiteSpace: 'pre-wrap' }}
+                                        style={{ whiteSpace: "pre-wrap" }}
                                         {...props}
                                       />
                                     ),
                                     li: (props) => (
                                       <li
-                                        style={{ whiteSpace: 'pre-wrap' }}
+                                        style={{ whiteSpace: "pre-wrap" }}
                                         {...props}
                                       />
                                     ),
@@ -521,7 +509,7 @@ const App: React.FC = () => {
                                 copiedBlockId={copiedBlockId}
                                 onCopy={handleCopyBlock}
                               />
-                            ),
+                            )
                           )
                         )}
                       </div>
@@ -540,7 +528,7 @@ const App: React.FC = () => {
               e.preventDefault();
               if (!isLoading && input.trim()) {
                 handleSend(input);
-                setInput('');
+                setInput("");
               }
             }}
           >
@@ -592,7 +580,7 @@ const App: React.FC = () => {
         <SettingsModal
           isOpen={isSettingsOpen}
           onClose={closeSettings}
-          user={user}
+          user={authUser}
         />
 
         <AdminPanel

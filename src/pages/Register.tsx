@@ -1,32 +1,54 @@
 // src/pages/Register.tsx
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { data, Link, useNavigate } from "react-router-dom";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!email || !password || !confirm) {
-      setError('Molim te ispuni sva polja.');
+    if (!username || !email || !password || !confirm) {
+      setError("All fields are required.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long.");
       return;
     }
 
     if (password !== confirm) {
-      setError('Lozinka i potvrda se ne podudaraju.');
+      setError("Passwords do not match.");
       return;
     }
 
-    // 🔹 demo registracija – kasnije ovdje ide pravi backend
-    localStorage.setItem('nexora_email', email);
+    try {
+      const res = await fetch("http://localhost:3001/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password }),
+      });
 
-    navigate('/chat');
+      const resp = await res.json();
+
+      if (!res.ok) {
+        setError(resp.error);
+        return;
+      }
+
+      // Uspješna registracija
+      setError(resp.message);
+      setTimeout(() => navigate("/login"), 1800);
+    } catch (err: any) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -36,8 +58,8 @@ const Register: React.FC = () => {
           <div className="topbar-main">
             <div className="topbar-title">NEXORA</div>
             <div className="topbar-subtitle">
-              <span className="sub-label">Registracija</span>
-              <span className="mono sub-model">Kreiraj Nexora račun</span>
+              <span className="sub-label">Registration</span>
+              <span className="mono sub-model">Create a Nexora account</span>
             </div>
           </div>
         </header>
@@ -46,9 +68,9 @@ const Register: React.FC = () => {
           <div
             style={{
               flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             <form
@@ -56,12 +78,12 @@ const Register: React.FC = () => {
               className="modal-form"
               style={{
                 maxWidth: 420,
-                width: '100%',
+                width: "100%",
                 borderRadius: 20,
                 padding: 20,
-                border: '1px solid rgba(148,163,184,0.6)',
-                background: 'rgba(255,255,255,0.96)',
-                boxShadow: '0 18px 40px rgba(15,23,42,0.16)',
+                border: "1px solid rgba(148,163,184,0.6)",
+                background: "rgba(255,255,255,0.96)",
+                boxShadow: "0 18px 40px rgba(15,23,42,0.16)",
               }}
             >
               <h2
@@ -69,12 +91,26 @@ const Register: React.FC = () => {
                   margin: 0,
                   marginBottom: 12,
                   fontSize: 18,
-                  letterSpacing: '0.16em',
-                  textTransform: 'uppercase',
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
                 }}
               >
-                Registracija
+                Registration
               </h2>
+
+              <div className="form-group">
+                <label className="field-label" htmlFor="reg-username">
+                  Username
+                </label>
+                <input
+                  id="reg-username"
+                  type="text"
+                  className="field-input"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Username"
+                />
+              </div>
 
               <div className="form-group">
                 <label className="field-label" htmlFor="reg-email">
@@ -86,13 +122,13 @@ const Register: React.FC = () => {
                   className="field-input"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ti@example.com"
+                  placeholder="user@example.com"
                 />
               </div>
 
               <div className="form-group">
                 <label className="field-label" htmlFor="reg-password">
-                  Lozinka
+                  Password
                 </label>
                 <input
                   id="reg-password"
@@ -100,13 +136,13 @@ const Register: React.FC = () => {
                   className="field-input"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Lozinka"
+                  placeholder="Password"
                 />
               </div>
 
               <div className="form-group">
                 <label className="field-label" htmlFor="reg-confirm">
-                  Potvrda lozinke
+                  Confirm Password
                 </label>
                 <input
                   id="reg-confirm"
@@ -114,43 +150,49 @@ const Register: React.FC = () => {
                   className="field-input"
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
-                  placeholder="Ponovno lozinka"
+                  placeholder="Re-enter password"
                 />
               </div>
 
               {error && (
-                <div className="form-status form-status-error">
+                <div
+                  className={
+                    error.includes("successfully")
+                      ? "form-status form-status-success"
+                      : "form-status form-status-error"
+                  }
+                >
                   {error}
                 </div>
               )}
 
               <div
                 className="form-actions"
-                style={{ justifyContent: 'space-between', marginTop: 10 }}
+                style={{ justifyContent: "space-between", marginTop: "1.5rem" }}
               >
                 <Link
                   to="/"
                   className="secondary-btn"
                   style={{
-                    textDecoration: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    textDecoration: "none",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  ← Natrag
+                  ← Back
                 </Link>
 
                 <button type="submit" className="primary-btn">
-                  Registriraj se
+                  Sign up
                 </button>
               </div>
 
               <p
                 className="field-hint"
-                style={{ marginTop: 10, textAlign: 'right' }}
+                style={{ marginTop: 10, textAlign: "right" }}
               >
-                Već imaš račun? <Link to="/login">Prijava</Link>
+                Already have an account? <Link to="/login">Login</Link>
               </p>
             </form>
           </div>

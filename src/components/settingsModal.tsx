@@ -1,8 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
-import '../styles/settings.css';
+import React, { useState, useRef, useEffect } from "react";
+import "../styles/settings.css";
+import { Navigate, useNavigate } from "react-router-dom";
 
 interface AuthUser {
   id?: number;
+  password?: string;
   email: string;
 }
 
@@ -12,42 +14,82 @@ interface SettingsModalProps {
   user: AuthUser | null;
 }
 
-type SettingsTab = 'account' | 'help' | 'delete';
+type SettingsTab = "account" | "help" | "delete";
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user }) => {
-  const [settingsTab, setSettingsTab] = useState<SettingsTab>('account');
+const SettingsModal: React.FC<SettingsModalProps> = ({
+  isOpen,
+  onClose,
+  user,
+}) => {
+  const [settingsTab, setSettingsTab] = useState<SettingsTab>("account");
 
   const [pwdForm, setPwdForm] = useState({
-    current: '',
-    next: '',
-    confirm: '',
+    current: "",
+    next: "",
+    confirm: "",
   });
 
-  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState("");
 
   const [pwdError, setPwdError] = useState<string | null>(null);
   const [pwdSuccess, setPwdSuccess] = useState<string | null>(null);
 
-  // Refs za tab gumbe (za dinamički indicator)
+  const navigate = useNavigate();
+
+  // Refs for tab buttons (for dynamic indicator)
   const accountTabRef = useRef<HTMLButtonElement | null>(null);
   const helpTabRef = useRef<HTMLButtonElement | null>(null);
   const deleteTabRef = useRef<HTMLButtonElement | null>(null);
 
-  // Style za tab-indicator (width + translateX)
+  // Style for tab indicator (width + translateX)
   const [indicatorStyle, setIndicatorStyle] = useState<React.CSSProperties>({});
 
-  // Placeholder za backend poziv – promjena lozinke
+  // Backend call – password change
   const changePasswordOnServer = async (params: {
-    email: string;
     currentPassword: string;
     newPassword: string;
+    confirmationPassword?: string;
   }) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("User not authenticated");
+
+    const res = await fetch("http://localhost:3001/change-password", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        currentPassword: params.currentPassword,
+        newPassword: params.newPassword,
+        confirmationPassword: params.confirmationPassword,
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "Password change failed");
+    }
   };
 
-  // Placeholder za backend poziv – brisanje računa
-  const deleteAccountOnServer = async (params: { email: string }) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
+  // Backend call – delete account
+  const deleteAccountOnServer = async (params: { password: string }) => {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("User not authenticated");
+
+    const res = await fetch("http://localhost:3001/delete-account", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ password: params.password }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "Account deletion failed");
+    }
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,37 +112,37 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user }) 
     const { current, next, confirm } = pwdForm;
 
     if (!current || !next || !confirm) {
-      setPwdError('Molim te ispuni sva polja.');
+      setPwdError("Please fill in all fields.");
       return;
     }
 
     if (next.length < 8) {
-      setPwdError('Nova lozinka treba imati barem 8 znakova.');
+      setPwdError("New password must be at least 8 characters.");
       return;
     }
 
     if (next !== confirm) {
-      setPwdError('Nova lozinka i potvrda se ne podudaraju.');
+      setPwdError("New password and confirmation do not match.");
       return;
     }
 
     if (!user?.email) {
-      setPwdError('Nisi prijavljen. Prijavi se pa pokušaj ponovno.');
+      setPwdError("You are not logged in. Please log in and try again.");
       return;
     }
 
     try {
       await changePasswordOnServer({
-        email: user.email,
         currentPassword: current,
         newPassword: next,
+        confirmationPassword: confirm,
       });
 
-      setPwdSuccess('Lozinka je uspješno promijenjena (demo).');
+      setPwdSuccess("Password changed successfully.");
     } catch (err: any) {
       console.error(err);
       setPwdError(
-        err?.message || 'Došlo je do greške pri promjeni lozinke.',
+        err?.message || "An error occurred while changing the password."
       );
     }
   };
@@ -111,51 +153,66 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user }) 
     setPwdSuccess(null);
 
     if (!user?.email) {
-      setPwdError('Nisi prijavljen. Prijavi se pa pokušaj ponovno.');
+      setPwdError("You are not logged in. Please log in and try again.");
       return;
     }
 
     if (!deleteConfirm) {
-      setPwdError('Molim te upiši svoju email adresu za potvrdu.');
-      return;
-    }
-
-    if (deleteConfirm !== user.email) {
-      setPwdError('Upisana email adresa se ne podudara s tvojim računom.');
+      setPwdError("Please enter your password for confirmation.");
       return;
     }
 
     try {
-      await deleteAccountOnServer({ email: user.email });
-      setPwdSuccess('Račun bi sada bio obrisan (demo).');
-      // Ovdje bi u pravoj aplikaciji odjavili korisnika, redirect, itd.
+      const res = await fetch("http://localhost:3001/delete-account", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ password: deleteConfirm }),
+      });
+
+      const resp = await res.json();
+
+      if (!res.ok) {
+        setPwdError(resp.error);
+        return;
+      }
+
+      // Uspešno obrisan nalog
+      setPwdSuccess(resp.message);
+
+      // Logout user i zatvori modal
+      localStorage.removeItem("token");
+      onClose();
+      navigate("/login", { replace: true });
     } catch (err: any) {
       console.error(err);
       setPwdError(
-        err?.message || 'Došlo je do greške pri brisanju računa.',
+        err?.message || "An error occurred while deleting the account."
       );
     }
   };
 
   const handleClose = () => {
-    // Reset lokalnog state-a
-    setSettingsTab('account');
-    setPwdForm({ current: '', next: '', confirm: '' });
-    setDeleteConfirm('');
+    // Reset local state
+    setSettingsTab("account");
+    setPwdForm({ current: "", next: "", confirm: "" });
+    setDeleteConfirm("");
     setPwdError(null);
     setPwdSuccess(null);
     onClose();
   };
 
-  // Dinamičko pozicioniranje & širina indikatora
+  // Dynamic positioning & width for indicator
   useEffect(() => {
     if (!isOpen) return;
 
     const updateIndicator = () => {
       let activeEl: HTMLButtonElement | null = null;
 
-      if (settingsTab === 'account') activeEl = accountTabRef.current;
-      else if (settingsTab === 'help') activeEl = helpTabRef.current;
+      if (settingsTab === "account") activeEl = accountTabRef.current;
+      else if (settingsTab === "help") activeEl = helpTabRef.current;
       else activeEl = deleteTabRef.current;
 
       if (!activeEl) return;
@@ -169,14 +226,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user }) 
     };
 
     updateIndicator();
-    window.addEventListener('resize', updateIndicator);
+    window.addEventListener("resize", updateIndicator);
 
     return () => {
-      window.removeEventListener('resize', updateIndicator);
+      window.removeEventListener("resize", updateIndicator);
     };
   }, [settingsTab, isOpen]);
 
-  // 🔹 VAŽNO: after all hooks
+  // 🔹 IMPORTANT: after all hooks
   if (!isOpen) {
     return null;
   }
@@ -192,12 +249,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user }) 
     >
       <div className="modal" data-tab={settingsTab}>
         <div className="modal-header">
-          <h2>Postavke</h2>
+          <h2>Settings</h2>
           <button
             type="button"
             className="modal-close-btn"
             onClick={handleClose}
-            aria-label="Zatvori postavke"
+            aria-label="Close settings"
           >
             <svg
               viewBox="0 0 24 24"
@@ -221,45 +278,45 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user }) 
           <button
             type="button"
             ref={accountTabRef}
-            className={`modal-tab ${settingsTab === 'account' ? 'active' : ''}`}
+            className={`modal-tab ${settingsTab === "account" ? "active" : ""}`}
             onClick={() => {
-              setSettingsTab('account');
+              setSettingsTab("account");
               setPwdError(null);
               setPwdSuccess(null);
             }}
           >
-            Račun
+            Account
           </button>
 
           <button
             type="button"
             ref={helpTabRef}
-            className={`modal-tab ${settingsTab === 'help' ? 'active' : ''}`}
+            className={`modal-tab ${settingsTab === "help" ? "active" : ""}`}
             onClick={() => {
-              setSettingsTab('help');
+              setSettingsTab("help");
               setPwdError(null);
               setPwdSuccess(null);
             }}
           >
-            Pomoć
+            Help
           </button>
 
           <button
             type="button"
             ref={deleteTabRef}
-            className={`modal-tab ${settingsTab === 'delete' ? 'active' : ''}`}
+            className={`modal-tab ${settingsTab === "delete" ? "active" : ""}`}
             onClick={() => {
-              setSettingsTab('delete');
+              setSettingsTab("delete");
               setPwdError(null);
               setPwdSuccess(null);
             }}
           >
-            Brisanje računa
+            Delete Account
           </button>
         </div>
 
         <div className="modal-body">
-          {settingsTab === 'account' && (
+          {settingsTab === "account" && (
             <div className="tab-content">
               <form
                 className="modal-form"
@@ -268,13 +325,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user }) 
               >
                 {user?.email && (
                   <p className="field-hint" style={{ marginBottom: 6 }}>
-                    Prijavljen si kao: <strong>{user.email}</strong>
+                    Logged in as: <strong>{user.email}</strong>
                   </p>
                 )}
 
                 <div className="form-group">
                   <label className="field-label" htmlFor="current">
-                    Trenutna lozinka
+                    Current password
                   </label>
                   <input
                     id="current"
@@ -289,7 +346,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user }) 
 
                 <div className="form-group">
                   <label className="field-label" htmlFor="next">
-                    Nova lozinka
+                    New password
                   </label>
                   <input
                     id="next"
@@ -301,14 +358,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user }) 
                     autoComplete="new-password"
                   />
                   <p className="field-hint">
-                    Minimalno 8 znakova. Preporuka: kombinacija slova, brojeva i
-                    simbola.
+                    Minimum 8 characters. Recommended: combination of letters,
+                    numbers, and symbols.
                   </p>
                 </div>
 
                 <div className="form-group">
                   <label className="field-label" htmlFor="confirm">
-                    Potvrda nove lozinke
+                    Confirm new password
                   </label>
                   <input
                     id="confirm"
@@ -321,13 +378,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user }) 
                   />
                 </div>
 
-                {pwdError && settingsTab === 'account' && (
+                {pwdError && settingsTab === "account" && (
                   <div className="form-status form-status-error">
                     {pwdError}
                   </div>
                 )}
 
-                {pwdSuccess && settingsTab === 'account' && (
+                {pwdSuccess && settingsTab === "account" && (
                   <div className="form-status form-status-success">
                     {pwdSuccess}
                   </div>
@@ -335,72 +392,73 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user }) 
 
                 <div className="form-actions">
                   <button type="submit" className="primary-btn">
-                    Spremi lozinku
+                    Save password
                   </button>
                 </div>
               </form>
             </div>
           )}
 
-          {settingsTab === 'help' && (
+          {settingsTab === "help" && (
             <div className="tab-content">
               <div className="modal-help">
                 <div className="modal-help-section">
-                  <h3>Kako koristiti Nexoru?</h3>
+                  <h3>How to use Nexora?</h3>
                   <p>
-                    Jednostavno postavi pitanje ili zalijepi kod. Nexora će
-                    pokušati objasniti, optimizirati ili nadopuniti tvoj kod na
-                    razumljiv način.
+                    Simply ask a question or paste your code. Nexora will try to
+                    explain, optimize, or enhance your code in an understandable
+                    way.
                   </p>
                 </div>
 
                 <div className="modal-help-section">
-                  <h3>Tipovi pitanja</h3>
+                  <h3>Types of questions</h3>
                   <ul>
-                    <li>Debugiranje i traženje bugova u kodu.</li>
-                    <li>Pisanje novih komponenti ili funkcija.</li>
-                    <li>Objašnjenja TS/JS/React/Node koncepata.</li>
+                    <li>Debugging and finding bugs in code.</li>
+                    <li>Writing new components or functions.</li>
+                    <li>Explanations of TS/JS/React/Node concepts.</li>
                   </ul>
                 </div>
 
                 <div className="modal-help-section">
-                  <h3>Trebaš dodatnu pomoć?</h3>
+                  <h3>Need extra help?</h3>
                   <p>
-                    Ako imaš specifičan problem, pokušaj što bolje opisati
-                    kontekst (stack, verzije, error poruke) i Nexora će ti dati
-                    preciznije rješenje.
+                    If you have a specific problem, try to describe the context
+                    (stack, versions, error messages) as clearly as possible and
+                    Nexora will give you a more precise solution.
                   </p>
                   <button type="button" className="secondary-btn">
-                    Otvori dokumentaciju (placeholder)
+                    Open documentation (placeholder)
                   </button>
                 </div>
               </div>
             </div>
           )}
 
-          {settingsTab === 'delete' && (
+          {settingsTab === "delete" && (
             <div className="tab-content">
               <form className="modal-form" onSubmit={handleDeleteSubmit}>
-                <h3 className="danger-title">Trajno brisanje računa</h3>
+                <h3 className="danger-title">Permanent account deletion</h3>
                 <p className="field-hint">
-                  Ova akcija je <strong>nepovratna</strong>. Svi podaci povezani s tvojim
-                  računom bit će obrisani. Upiši svoju email adresu za potvrdu.
+                  This action is <strong>irreversible</strong>. All data linked
+                  to your account will be deleted. Enter your email for
+                  confirmation.
                 </p>
 
                 {user?.email && (
                   <p className="field-hint" style={{ marginBottom: 6 }}>
-                    Tvoja email adresa: <strong>{user.email}</strong>
+                    Your email: <strong>{user.email}</strong>
                   </p>
                 )}
 
                 <div className="form-group">
                   <label className="field-label" htmlFor="delete-confirm">
-                    Potvrdi email adresu
+                    Confirm password
                   </label>
                   <input
                     id="delete-confirm"
                     name="delete-confirm"
-                    type="email"
+                    type="password"
                     className="field-input"
                     value={deleteConfirm}
                     onChange={(e) => {
@@ -408,17 +466,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user }) 
                       setPwdError(null);
                       setPwdSuccess(null);
                     }}
-                    placeholder="upiši svoju email adresu"
+                    placeholder="Enter your password"
                   />
                 </div>
 
-                {pwdError && settingsTab === 'delete' && (
+                {pwdError && settingsTab === "delete" && (
                   <div className="form-status form-status-error">
                     {pwdError}
                   </div>
                 )}
 
-                {pwdSuccess && settingsTab === 'delete' && (
+                {pwdSuccess && settingsTab === "delete" && (
                   <div className="form-status form-status-success">
                     {pwdSuccess}
                   </div>
@@ -426,7 +484,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user }) 
 
                 <div className="form-actions">
                   <button type="submit" className="danger-btn">
-                    Trajno izbriši račun
+                    Permanently delete account
                   </button>
                 </div>
               </form>
