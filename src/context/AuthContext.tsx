@@ -5,9 +5,10 @@ interface User {
   id: number;
   email: string;
   username: string;
-  password?: string;
+  // password?: string;
   role: string;
   device_type?: string;
+  // status?: string;
   iat?: number;
   exp?: number;
 }
@@ -27,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const logoutServer = async () => {
     try {
-      await fetch("/logout", {
+      await fetch("http://localhost:3001/logout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -35,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         },
       });
     } catch (error) {
-      console.error("Error during server logout:", error);
+      console.error("Error during server logout: ", error);
     }
   };
 
@@ -69,8 +70,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUser(decoded);
   };
 
-  // Logout funkcija - ukloni token + postavi korisnika na null
+  // Logout funkcija - odjava sa servera, ukloni token + postavi korisnika na null
   const logout = () => {
+    logoutServer();
     localStorage.removeItem("token");
     setUser(null);
   };

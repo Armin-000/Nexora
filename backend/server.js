@@ -13,7 +13,7 @@ app.use(express.json());
 
 // Endpoint za testiranje servera
 app.get("/", (req, res) => {
-  res.send("Nexora backend is running.");
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
 // Konekcija na MySQL
@@ -74,24 +74,32 @@ app.post("/register", async (req, res) => {
 
 // Login
 app.post("/login", (req, res) => {
-  const { email, password, device_type } = req.body;
+  const { email, password, device_type, status } = req.body;
 
   const sql = "SELECT * FROM chatbot_users WHERE email = ?";
   db.query(sql, [email], async (err, results) => {
-    if (err) return res.status(500).send("Login failed");
+    if (err) return res.status(500).send("Login failed.");
     if (results.length === 0)
       return res.status(401).send("Invalid credentials");
 
     const match = await bcrypt.compare(password, results[0].password);
-    if (!match) return res.status(401).send("Invalid credentials");
+    if (!match) return res.status(401).send("Invalid credentials.");
+
+    const updateDeviceSql =
+      "UPDATE chatbot_users SET device_type = ? WHERE id = ?";
+    db.query(updateDeviceSql, [device_type || "unknown", results[0].id]);
+
+    const updateStatusSql = "UPDATE chatbot_users SET status = ? WHERE id = ?";
+    db.query(updateStatusSql, [status || "active", results[0].id]);
 
     // Generiranje JWT tokena
     const user = {
       id: results[0].id,
       email: results[0].email,
       username: results[0].username,
-      password: results[0].password,
+      // password: results[0].password,
       role: results[0].role,
+      // status: results[0].status,
       device_type: device_type || "unknown",
     };
     const token = jwt.sign(user, process.env.JWT_SECRET, {
@@ -101,10 +109,6 @@ app.post("/login", (req, res) => {
     res.json({ token });
   });
 });
-
-app.listen(process.env.PORT, () =>
-  console.log(`🚀 Backend running on http://localhost:${process.env.PORT}`)
-);
 
 // Middleware za provjeru JWT tokena
 function authenticateToken(req, res, next) {
@@ -207,3 +211,17 @@ app.post("/delete-account", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Server error." });
   }
 });
+
+// Logout endpoint
+app.post("/logout", authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  const sql = "UPDATE chatbot_users SET status = 'not active' WHERE id = ?";
+  db.query(sql, [userId], (err) => {
+    if (err) return res.status(500).json({ error: "Failed to update status" });
+    return res.json({ message: "User logged out and status updated" });
+  });
+});
+
+app.listen(process.env.PORT, () =>
+  console.log(`🚀 Backend running on http://localhost:${process.env.PORT}`)
+);

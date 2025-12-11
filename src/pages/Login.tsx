@@ -19,11 +19,20 @@ const Login: React.FC = () => {
       return;
     }
 
+    const detectDeviceType = () => {
+      const ua = navigator.userAgent.toLowerCase();
+      if (/mobile|iphone|ipod|android.*mobile|windows phone/.test(ua)) return "mobile";
+      if (/ipad|tablet|android(?!.*mobile)/.test(ua)) return "tablet";
+      return "desktop";
+    };
+
+    const device_type = detectDeviceType();
+
     try {
       const res = await fetch("http://localhost:3001/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, device_type, status: "active" }),
       });
 
       if (!res.ok) {

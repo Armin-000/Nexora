@@ -220,10 +220,11 @@ const App: React.FC = () => {
   const openSettings = () => setIsSettingsOpen(true);
   const closeSettings = () => setIsSettingsOpen(false);
 
+  const { logout } = useAuth();
   const handleLogout = () => {
-    // Implementiraj odjavu koristeći AuthContext, ako je potrebno.
-    // Nakon odjave vrati korisnika na početnu (Landing)
-    // (Pretpostavlja se da AuthContext rješava čišćenje usera/tokena)
+    if (authUser) {
+      logout();
+    }
     navigate("/");
   };
 
