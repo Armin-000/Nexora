@@ -11,6 +11,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Endpoint za testiranje servera
+app.get("/", (req, res) => {
+  res.send("Nexora backend is running.");
+});
+
 // Konekcija na MySQL
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
