@@ -17,7 +17,6 @@ import "prismjs/components/prism-tsx";
 import SettingsModal from "./components/settingsModal";
 import AdminPanel from "./components/AdminPanel";
 import { useChat } from "./hooks/useChat";
-import type { AuthUser } from "./types";
 
 /* ────────────────────────────────────────────────────────────
  * UI Types

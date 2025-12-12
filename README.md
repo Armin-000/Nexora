@@ -39,10 +39,9 @@ NEXORA/
 │   │   ├── Landing.tsx
 │   │   ├── Login.tsx
 │   │   └── Register.tsx
-│   ├── styles/
+│   └── styles/
 │       ├── index.css          # Global styles
-│       ├── settings.css       # Modal styles
-│       └── AdminPanel.css     # Admin panel styles
+│       └── settings.css       # Modal styles      
 ├── index.html
 ├── package.json
 ├── package-lock.json

@@ -1,15 +1,23 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
 @import "prismjs/themes/prism-tomorrow.css";
 
-/* Root */
+/* Prism – globalno prelamanje koda */
+pre[class*="language-"],
+code[class*="language-"] {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* =========================
+   Root & Reset
+   ========================= */
 
 :root {
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
     "SF Pro Text", "Segoe UI", sans-serif;
   color-scheme: dark;
 }
-
-/* Reset */
 
 * {
   box-sizing: border-box;
@@ -28,7 +36,9 @@ body {
   overflow-x: hidden;
 }
 
-/* Layout */
+/* =========================
+   Layout
+   ========================= */
 
 .app-root {
   height: 100vh;
@@ -52,7 +62,9 @@ body {
   overflow-x: hidden;
 }
 
-/* Themes */
+/* =========================
+   Themes
+   ========================= */
 
 .theme-dark {
   background: radial-gradient(circle at top, #020617 0, #020617 45%, #000 100%);
@@ -65,7 +77,9 @@ body {
   color-scheme: light;
 }
 
-/* Header */
+/* =========================
+   Topbar
+   ========================= */
 
 .topbar {
   position: sticky;
@@ -157,7 +171,9 @@ body {
   color: #020617;
 }
 
-/* Theme toggle */
+/* =========================
+   Theme toggle
+   ========================= */
 
 .theme-toggle {
   position: relative;
@@ -200,7 +216,9 @@ body {
   background: #0ea5e9;
 }
 
-/* Chat body */
+/* =========================
+   Chat body / messages
+   ========================= */
 
 .chat-body {
   display: flex;
@@ -239,7 +257,9 @@ body {
   background: rgba(148, 163, 184, 0.6);
 }
 
-/* Message rows */
+/* =========================
+   Message rows / empty state
+   ========================= */
 
 .message-row {
   display: flex;
@@ -290,7 +310,9 @@ body {
   opacity: 0.9;
 }
 
-/* Avatars */
+/* =========================
+   Avatars
+   ========================= */
 
 .avatar {
   width: 32px;
@@ -307,27 +329,21 @@ body {
   border: 1px solid rgba(148, 163, 184, 0.7);
 }
 
-.theme-dark .avatar-user {
-  background: #f9fafb;
-  color: #020617;
-}
-
-.theme-dark .avatar-bot {
-  background: #020617;
-  color: #e5e7eb;
-}
-
-.theme-light .avatar-user {
-  background: #020617;
-  color: #f9fafb;
-}
-
+.theme-dark .avatar-user,
 .theme-light .avatar-bot {
   background: #f9fafb;
   color: #020617;
 }
 
-/* Bubbles */
+.theme-dark .avatar-bot,
+.theme-light .avatar-user {
+  background: #020617;
+  color: #f9fafb;
+}
+
+/* =========================
+   Bubbles
+   ========================= */
 
 .bubble {
   max-width: 78%;
@@ -384,7 +400,9 @@ body {
   overflow-wrap: anywhere;
 }
 
-/* Copy cijelog odgovora (assistant bubble) */
+/* =========================
+   Copy cijelog odgovora
+   ========================= */
 
 .message-copy-btn {
   border: none;
@@ -413,10 +431,13 @@ body {
   font-size: 0.9rem;
 }
 
-/* Terminal (code-block) */
+/* =========================
+   Code block (terminal)
+   ========================= */
 
 .code-block {
   margin-top: 6px;
+  margin-bottom: 10px;
   border-radius: 16px;
   border: 1px solid rgba(148, 163, 184, 0.7);
   width: 100%;
@@ -445,12 +466,11 @@ body {
 .code-body pre,
 .code-body code {
   margin: 0;
-  white-space: pre;
   font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
     Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 12px;
   line-height: 1.5;
-  min-width: 100%;
+  max-width: 100%;
   border-radius: 10px;
 }
 
@@ -532,7 +552,9 @@ body {
   border-color: rgba(255, 255, 255, 0.35);
 }
 
-/* Error banner */
+/* =========================
+   Error banner
+   ========================= */
 
 .error-banner {
   margin-top: 8px;
@@ -553,17 +575,15 @@ body {
   color: #7f1d1d;
 }
 
-/* Input bar */
+/* =========================
+   Input bar
+   ========================= */
 
 .input-row {
   position: sticky;
   bottom: 0;
   padding: 8px 0 12px;
   margin-top: 4px;
-  background: transparent;
-}
-
-.theme-light .input-row {
   background: transparent;
 }
 
@@ -713,7 +733,9 @@ body {
   }
 }
 
-/* Typing indicator */
+/* =========================
+   Typing indicator
+   ========================= */
 
 .typing-inline {
   display: inline-flex;
@@ -759,7 +781,9 @@ body {
   }
 }
 
-/* Responsive */
+/* =========================
+   Responsive
+   ========================= */
 
 @media (max-width: 640px) {
   .app-root {
@@ -800,8 +824,5 @@ body {
   .code-body pre,
   .code-body code {
     font-size: 11px;
-    white-space: pre-wrap;
-    word-break: break-word;
-    overflow-wrap: anywhere;
   }
 }

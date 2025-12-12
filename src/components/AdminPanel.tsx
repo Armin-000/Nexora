@@ -1,14 +1,14 @@
 // src/components/AdminPanel.tsx
-import React, { useState, useRef, useEffect } from 'react';
-import '../styles/settings.css';
-import '../styles/AdminPanel.css';
+import React, { useState, useRef, useEffect } from "react";
+import "../styles/settings.css";
+import "../styles/AdminPanel.css";
 
 interface AdminPanelProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type AdminTab = 'filters' | 'stats' | 'logs';
+type AdminTab = "filters" | "stats" | "logs";
 
 // Tip podatka koji ćeš kasnije dobivati iz baze
 interface AdminResultRow {
@@ -20,13 +20,13 @@ interface AdminResultRow {
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
-  const [adminTab, setAdminTab] = useState<AdminTab>('filters');
+  const [adminTab, setAdminTab] = useState<AdminTab>("filters");
 
   // 4 glavna polja (filteri)
-  const [aktivnost, setAktivnost] = useState('');
-  const [filterKorisnika, setFilterKorisnika] = useState('');
-  const [filterUredaja, setFilterUredaja] = useState('');
-  const [filterAktivnosti, setFilterAktivnosti] = useState('');
+  const [aktivnost, setAktivnost] = useState("");
+  const [filterKorisnika, setFilterKorisnika] = useState("");
+  const [filterUredaja, setFilterUredaja] = useState("");
+  const [filterAktivnosti, setFilterAktivnosti] = useState("");
 
   // Rezultati (kasnije iz baze)
   const [results, setResults] = useState<AdminResultRow[]>([]);
@@ -52,7 +52,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   }): Promise<AdminResultRow[]> => {
     // ❗ OVDJE ĆEŠ KASNIJE SPOJITI BAZU (API, fetch, axios, sl.)
     // Sad samo simuliramo delay + fake podatke
-    console.log('Fetch iz baze (kasnije): ', params);
+    console.log("Fetch iz baze (kasnije): ", params);
 
     await new Promise((resolve) => setTimeout(resolve, 600));
 
@@ -60,27 +60,27 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     return [
       {
         id: 1,
-        korisnik: 'admin@nexora.dev',
-        uredaj: 'Desktop',
-        aktivnost: params.aktivnost || 'Pregled',
-        vrijeme: '2025-12-09 21:30',
+        korisnik: "admin@nexora.dev",
+        uredaj: "Desktop",
+        aktivnost: params.aktivnost || "Pregled",
+        vrijeme: "2025-12-09 21:30",
       },
       {
         id: 2,
-        korisnik: 'user@example.com',
-        uredaj: 'Mobile',
-        aktivnost: params.aktivnost || 'Kreiranje',
-        vrijeme: '2025-12-09 21:35',
+        korisnik: "user@example.com",
+        uredaj: "Mobile",
+        aktivnost: params.aktivnost || "Kreiranje",
+        vrijeme: "2025-12-09 21:35",
       },
     ];
   };
 
   const handleClose = () => {
-    setAdminTab('filters');
-    setAktivnost('');
-    setFilterKorisnika('');
-    setFilterUredaja('');
-    setFilterAktivnosti('');
+    setAdminTab("filters");
+    setAktivnost("");
+    setFilterKorisnika("");
+    setFilterUredaja("");
+    setFilterAktivnosti("");
     setResults([]);
     setErrorMsg(null);
     setStatusMsg(null);
@@ -103,11 +103,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
       });
 
       setResults(data);
-      setStatusMsg('Filteri su primijenjeni. Prikazujem rezultate u statistici.');
-      setAdminTab('stats'); // automatski prebaci na Statistika tab
+      setStatusMsg(
+        "Filteri su primijenjeni. Prikazujem rezultate u statistici."
+      );
+      setAdminTab("stats"); // automatski prebaci na Statistika tab
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err?.message || 'Došlo je do greške pri dohvaćanju podataka.');
+      setErrorMsg(
+        err?.message || "Došlo je do greške pri dohvaćanju podataka."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -120,8 +124,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     const updateIndicator = () => {
       let activeEl: HTMLButtonElement | null = null;
 
-      if (adminTab === 'filters') activeEl = filtersTabRef.current;
-      else if (adminTab === 'stats') activeEl = statsTabRef.current;
+      if (adminTab === "filters") activeEl = filtersTabRef.current;
+      else if (adminTab === "stats") activeEl = statsTabRef.current;
       else activeEl = logsTabRef.current;
 
       if (!activeEl) return;
@@ -134,10 +138,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     };
 
     updateIndicator();
-    window.addEventListener('resize', updateIndicator);
+    window.addEventListener("resize", updateIndicator);
 
     return () => {
-      window.removeEventListener('resize', updateIndicator);
+      window.removeEventListener("resize", updateIndicator);
     };
   }, [adminTab, isOpen]);
 
@@ -187,9 +191,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
           <button
             type="button"
             ref={filtersTabRef}
-            className={`modal-tab ${adminTab === 'filters' ? 'active' : ''}`}
+            className={`modal-tab ${adminTab === "filters" ? "active" : ""}`}
             onClick={() => {
-              setAdminTab('filters');
+              setAdminTab("filters");
               setErrorMsg(null);
               setStatusMsg(null);
             }}
@@ -200,9 +204,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
           <button
             type="button"
             ref={statsTabRef}
-            className={`modal-tab ${adminTab === 'stats' ? 'active' : ''}`}
+            className={`modal-tab ${adminTab === "stats" ? "active" : ""}`}
             onClick={() => {
-              setAdminTab('stats');
+              setAdminTab("stats");
               // ne brišemo results, samo poruke
               setErrorMsg(null);
               setStatusMsg(null);
@@ -214,9 +218,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
           <button
             type="button"
             ref={logsTabRef}
-            className={`modal-tab ${adminTab === 'logs' ? 'active' : ''}`}
+            className={`modal-tab ${adminTab === "logs" ? "active" : ""}`}
             onClick={() => {
-              setAdminTab('logs');
+              setAdminTab("logs");
               setErrorMsg(null);
               setStatusMsg(null);
             }}
@@ -228,7 +232,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
         {/* BODY */}
         <div className="modal-body">
           {/* TAB: FILTERI */}
-          {adminTab === 'filters' && (
+          {adminTab === "filters" && (
             <div className="tab-content">
               <form className="modal-form" onSubmit={handleApplyFilters}>
                 {/* AKTIVNOST */}
@@ -324,8 +328,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                   >
                     Zatvori
                   </button>
-                  <button type="submit" className="primary-btn" disabled={isLoading}>
-                    {isLoading ? 'Učitavanje...' : 'Primijeni filtere'}
+                  <button
+                    type="submit"
+                    className="primary-btn"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Učitavanje..." : "Primijeni filtere"}
                   </button>
                 </div>
               </form>
@@ -333,7 +341,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
           )}
 
           {/* TAB: STATISTIKA — TABLICA REZULTATA */}
-          {adminTab === 'stats' && (
+          {adminTab === "stats" && (
             <div className="tab-content">
               <div className="modal-help-section">
                 <h3>Rezultati prema filtrima</h3>
@@ -342,7 +350,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
 
                 {!isLoading && results.length === 0 && (
                   <p className="field-hint">
-                    Trenutno nema rezultata za odabrane filtere. Pokušaj primijeniti filtere u prvom tabu.
+                    Trenutno nema rezultata za odabrane filtere. Pokušaj
+                    primijeniti filtere u prvom tabu.
                   </p>
                 )}
 
@@ -377,14 +386,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
           )}
 
           {/* TAB: LOGOVI — placeholder za kasnije */}
-          {adminTab === 'logs' && (
+          {adminTab === "logs" && (
             <div className="tab-content">
               <div className="modal-help">
                 <div className="modal-help-section">
                   <h3>Logovi aktivnosti</h3>
                   <p>
-                    Ovdje kasnije možeš prikazivati zadnje admin akcije, promjene postavki,
-                    audit logove itd.
+                    Ovdje kasnije možeš prikazivati zadnje admin akcije,
+                    promjene postavki, audit logove itd.
                   </p>
                 </div>
               </div>
